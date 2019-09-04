@@ -15,7 +15,7 @@ svs.label SVs used
 svs.warning 4:
 svs.critical 3:
 fix.label GNSS fix state (0=no fix, 2=2D fix, 3=3D fix)
-fix:warning 2:
+fix.warning 2:
 fix.critical 0:
 EOM
         exit 0;;
