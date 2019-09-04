@@ -1,0 +1,38 @@
+#!/bin/sh
+
+case $1 in
+   config)
+        cat <<'EOM'
+multigraph gpsd_svs
+
+graph_title GNSS state
+graph_order svs fix
+graph_args --lower-limit 0
+graph_vlabel svs
+graph_category gpsd
+graph_info The number of GNSS satellites (SVs) in view and fix state of the receiver connected to GPSd
+svs.label SVs used
+svs.warning 4:
+svs.critical 3:
+fix.label GNSS fix state (0=no fix, 2=2D fix, 3=3D fix)
+fix:warning 2:
+fix.critical 0:
+EOM
+        exit 0;;
+esac
+
+# Parse $GPGSA
+#
+# Src: http://aprs.gids.nl/nmea
+
+# Get a single gpgsa sentence from GPSd
+GPGGA=$(gpspipe -r 2>/dev/null|grep -m1 '^\$GPGGA') || exit 128
+GPGSA=$(gpspipe -r 2>/dev/null|grep -m1 '^\$GPGSA') || exit 128
+
+SVS=$(echo "${GPGGA}"|cut -d, -f8|sed  -e 's/^0//g')
+FIX=$(echo "${GPGSA}"|cut -d, -f3)
+
+if [ "${FIX}" = "1" ]; then FIX=0; fi # GPGSA has 1 if no fix
+
+echo "svs.value ${SVS}"
+echo "fix.value ${FIX}"
